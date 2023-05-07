@@ -1,0 +1,17 @@
+c3f18151d7cdd8120d7046dad4ad5f42 *DESCRIPTION
+22e9710b38ad482333425e2244b9e836 *LICENSE
+ad2b7bd262cdb6360ed82f418e810e68 *NAMESPACE
+2ad1a4c33e51d1376767bb7c2a1d1a0b *NEWS.md
+6ae9750b8a4d36948c80dc869b72973c *R/extract_fude.R
+64339f6f7be92fe2a4905232a9198e69 *R/ls_fude.R
+84879e82b39845242480af5b4fa3efdf *R/read_fude.R
+ea6713d486fb7a6388595b6ba3785d6e *R/rename_fude.R
+7026da427a70248be6f14bc3339d1728 *R/sysdata.rda
+38c8aa711eb93607592bc79604acfaae *README.md
+587f3a2173a5b2b2c7e7d15a3f45ff06 *inst/extdata/castle.zip
+50721e418a9c180a90a0c8e688eadc5a *man/extract_fude.Rd
+65c6cd1e60108da56b7674eddce07f49 *man/ls_fude.Rd
+41678c2c77b0100a6eb2597f52a7377d *man/read_fude.Rd
+33d4c6af469444c6ea460024dafecd71 *man/rename_fude.Rd
+ab99907a2dc29057e51a3e3203e4fc23 *tests/testthat.R
+6fd7197a7075f24273a955a06451c932 *tests/testthat/test-extract_fude.R
