@@ -11,13 +11,13 @@
 #' @param city
 #'   Local government name (or code) to be extracted.
 #' @param list
-#'   Logical. If `FALSE`, the object to be extracted is no longer a list.
+#'   logical. If `FALSE`, the object to be extracted is no longer a list.
 #' @returns A list of [sf::sf()] object(s).
 #' @seealso [read_fude()].
 #' @examples
 #' path <- system.file("extdata", "castle.zip", package = "fude")
-#' d <- read_fude(path)
-#' d2 <- extract_fude(d, year = 2022, city = '\u677e\u5c71\u5e02')
+#' d <- read_fude(path, quiet = TRUE)
+#' d2 <- extract_fude(d, year = 2022, city = "\u677e\u5c71\u5e02")
 #' d |> extract_fude(year = 2022)
 #' @export
 extract_fude <- function(data, year = NULL, city = NULL, list = TRUE) {

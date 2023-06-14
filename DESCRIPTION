@@ -1,7 +1,7 @@
 Package: fude
 Type: Package
 Title: Utilities for Fude Polygon
-Version: 0.1.1
+Version: 0.2.0
 Authors@R: 
     person(given = "Takeshi",
            family = "Nishimura",
@@ -22,9 +22,9 @@ Suggests: testthat (>= 3.0.0)
 RoxygenNote: 7.2.3
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2023-05-05 12:28:54 UTC; takeshinishimura
+Packaged: 2023-06-07 11:11:42 UTC; takeshinishimura
 Author: Takeshi Nishimura [aut, cph, cre]
     (<https://orcid.org/0000-0003-1761-4300>)
 Maintainer: Takeshi Nishimura <takenishi@gmail.com>
 Repository: CRAN
-Date/Publication: 2023-05-07 10:40:05 UTC
+Date/Publication: 2023-06-14 12:52:04 UTC
