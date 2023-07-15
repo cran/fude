@@ -15,6 +15,8 @@
 #'   - `"title"`: Title case.
 #'   - `"lower"`: Lower case.
 #'   - `"upper"`: Upper case.
+#' @param quiet
+#'   logical. Suppress information about the data to be read.
 #' @returns A list of [sf::sf()] objects.
 #' @seealso [read_fude()].
 #' @examples
@@ -24,41 +26,13 @@
 #' d2 <- rename_fude(d, suffix = FALSE)
 #' d2 <- d |> rename_fude(romaji = "upper")
 #' @export
-rename_fude <- function(data, suffix = TRUE, romaji = NULL) {
+rename_fude <- function(data, suffix = TRUE, romaji = NULL, quiet = FALSE) {
   old_names <- names(data)
   nen <- sub("(_.*)", "_", old_names)
   unique_nen <- unique(nen)
-  matching_cols <- sub(paste(unique_nen, collapse = "|"), "", old_names)
-  matching_idx <- match(matching_cols, lg_code$"\u56e3\u4f53\u30b3\u30fc\u30c9")
+  matching_codes <- sub(paste(unique_nen, collapse = "|"), "", old_names)
 
-  if (is.null(romaji)) {
-
-    new_names <- lg_code$"\u5e02\u533a\u753a\u6751\u540d\uff08\u6f22\u5b57\uff09"[matching_idx]
-
-  } else {
-
-    new_names <- lg_code$romaji[matching_idx]
-
-    if (romaji == "lower") {
-
-      new_names <- tolower(new_names)
-
-    } else {
-
-      if (romaji == "title") {
-
-        unique_string <- "uniquestring"
-        tmp <- gsub("-", unique_string, new_names)
-        tmp <- sub("_", " ", tmp)
-        new_names <- tools::toTitleCase(tolower(tmp))
-        new_names <- gsub(unique_string, "-", new_names)
-        new_names <- sub(" ", "_", new_names)
-
-      }
-
-    }
-
-  }
+  new_names <- get_lg_name(matching_codes, suffix, romaji)
 
   if (suffix == FALSE) {
 
@@ -75,6 +49,43 @@ rename_fude <- function(data, suffix = TRUE, romaji = NULL) {
   x <- data
   names(x) <- new_names
 
-  message(paste(paste0(old_names, " -> ", new_names), collapse = "\n"))
+  if (quiet == FALSE) {
+    message(paste(paste0(old_names, " -> ", new_names), collapse = "\n"))
+  }
+
+  return(x)
+}
+
+get_lg_name <- function(matching_codes, suffix, romaji) {
+  matching_idx <- match(matching_codes, fude::lg_code_table$lg_code)
+
+  if (is.null(romaji)) {
+
+    x <- fude::lg_code_table$city_kanji[matching_idx]
+
+  } else {
+
+    x <- fude::lg_code_table$romaji[matching_idx]
+
+    if (romaji == "lower") {
+
+      x <- tolower(x)
+
+    } else {
+
+      if (romaji == "title") {
+
+        unique_string <- "uniquestring"
+        tmp <- gsub("-", unique_string, x)
+        tmp <- sub("_", " ", tmp)
+        x <- tools::toTitleCase(tolower(tmp))
+        x <- gsub(unique_string, "-", x)
+        x <- sub(" ", "_", x)
+
+      }
+
+    }
+
+  }
   return(x)
 }
