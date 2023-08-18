@@ -1,3 +1,11 @@
+# fude 0.3.3
+
+* Added the ability to easily draw municipal boundaries.
+
+# fude 0.3.2
+
+* Improved the process of eliminating duplicate agricultural community names.
+
 # fude 0.3.1
 
 * Minor modifications due to elapsed time for samples being too long.

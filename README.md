@@ -96,26 +96,126 @@ names(d3)
 
 You can download the agricultural community boundary data corresponding
 to the Fude Polygon data from the MAFF website
-<https://www.maff.go.jp/j/tokei/census/shuraku_data/2020/ma/index.html>.
+<https://www.maff.go.jp/j/tokei/census/shuraku_data/2020/ma/> (only
+Japanese is available).
 
 ``` r
-b <- get_boundary(d2)
+b <- get_boundary(d)
 ```
 
-You can draw a map combining Fude Polygons and agricultural community
-boundaries.
+You can easily draw a map combining Fude Polygons and agricultural
+community boundaries.
 
 ``` r
 library(ggplot2)
-library(dplyr)
 
-db <- combine_fude(d2, b, city = "松山市", community = "由良|北浦|鷲ケ巣|門田|馬磯|泊|御手洗|船越")
+db <- combine_fude(d, b, city = "松山市", community = "御手洗|泊|船越|鷲ケ巣|由良|北浦|門田|馬磯")
 
 ggplot() +
+  geom_sf(data = db$community, fill = NA) +
   geom_sf(data = db$fude, aes(fill = RCOM_NAME)) +
-  geom_sf(data = db$boundary, fill = NA) +
   guides(fill = guide_legend(reverse = TRUE, title = "興居島の集落別耕地")) +
   theme_void()
 ```
 
 <img src="man/figures/README-gogoshima-1.png" width="100%" />
+
+**出典**：農林水産省が提供する「筆ポリゴンデータ（2022年度公開）」および「農業集落境界データ（2021年度公開）」を加工して作成。
+
+If you want to be particular about the details of the map, for example,
+execute the following code.
+
+``` r
+library(magrittr)
+library(dplyr)
+library(ggrepel)
+library(cowplot)
+
+db <- combine_fude(d, b, city = "松山市", old_village = "興居島", community = "^(?!釣島).*")
+
+minimap <- ggplot() +
+  geom_sf(data = db$lg_all, aes(fill = fill)) +
+  geom_sf_text(data = db$lg_all, aes(label = city_kanji), family = "HiraKakuProN-W3") +
+  geom_sf(data = db$community, fill = "black") +
+  theme_void() +
+  theme(panel.background = element_rect(fill = "aliceblue")) +
+  scale_fill_manual(values = c("white", "gray"))
+
+db$community <- db$community %>%
+  dplyr::mutate(center = sf::st_centroid(geometry))
+
+mainmap <- ggplot() +
+  geom_sf(data = db$community, fill = "whitesmoke") +
+  geom_sf(data = db$fude, aes(fill = RCOM_NAME)) +
+  geom_point(data = db$community, 
+             aes(x = sf::st_coordinates(center)[, 1], 
+                 y = sf::st_coordinates(center)[, 2]), 
+             colour = "gray") +
+  geom_text_repel(data = db$community,
+                  aes(x = sf::st_coordinates(center)[, 1], 
+                      y = sf::st_coordinates(center)[, 2], 
+                      label = RCOM_NAME),
+                  nudge_x = c(-.01, .01, -.01, -.012, .005, -.01, .01, .01),
+                  nudge_y = c(.005, .005, 0, .01, -.005, .01, 0, -.005),
+                  min.segment.length = .01,
+                  segment.color = "gray",
+                  size = 3,
+                  family = "HiraKakuProN-W3") +
+  theme_void() +
+  theme(legend.position = "none")
+
+ggdraw(mainmap) +
+  draw_plot(
+    {minimap +
+       geom_rect(aes(xmin = 132.47, xmax = 133.0,
+                     ymin = 33.72, ymax = 34.05),
+                 fill = NA,
+                 colour = "black",
+                 size = .5) +
+       coord_sf(xlim = c(132.47, 133.0),
+                ylim = c(33.72, 34.05),
+                expand = FALSE) +
+       theme(legend.position = "none")
+    },
+    x = .7, 
+    y = 0,
+    width = .3, 
+    height = .3)
+```
+
+<img src="man/figures/README-gogoshima_with_minimap-1.png" width="100%" />
+
+**出典**：農林水産省が提供する「筆ポリゴンデータ（2022年度公開）」および「農業集落境界データ（2021年度公開）」を加工して作成。
+
+This package may be beneficial, especially for R beginners, when simply
+wanting to draw agricultural community boundaries.
+
+``` r
+db <- combine_fude(d, b, city = "八幡浜市", old_village = "真穴")
+
+ggplot(data = db$community) +
+  geom_sf(data = db$lg, fill = "gray") +
+  geom_sf_text(data = db$lg, aes(label = city_kanji), family = "HiraKakuProN-W3") +
+  geom_sf(fill = "ivory") +
+# geom_sf(data = db$fude, aes(fill = land_type), colour = NA) +
+  geom_sf_label(aes(label = RCOM_NAME), family = "HiraKakuProN-W3") +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+<img src="man/figures/README-yawatahama-1.png" width="100%" />
+
+**出典**：農林水産省が提供する「筆ポリゴンデータ（2022年度公開）」および「農業集落境界データ（2021年度公開）」を加工して作成。
+
+If you want to use `mapview()`, do the following.
+
+``` r
+library(mapview)
+
+db1 <- combine_fude(d, b, city = "伊方町")
+db2 <- combine_fude(d, b, city = "八幡浜市")
+db3 <- combine_fude(d, b, city = "西予市", old_village = "三瓶|双岩|三島|二木生")
+db <- bind_fude(db1, db2, db3)
+
+mapview::mapview(db$fude, zcol = "RCOM_NAME", layer.name = "農業集落名")
+```

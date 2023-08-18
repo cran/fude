@@ -6,55 +6,58 @@
 #' @param data
 #'   List of [sf::sf()] objects.
 #' @param year
-#'   Year to be extracted. If both `year` and `city` are not
-#'   specified, all objects for the most recent year are extracted.
+#'   Years to be extracted.
 #' @param city
-#'   Local government name (or code) to be extracted.
+#'   Local government names or codes to be extracted.
 #' @param list
 #'   logical. If `FALSE`, the object to be extracted is no longer a list.
 #' @returns A list of [sf::sf()] object(s).
 #' @seealso [read_fude()].
+#'
 #' @examples
 #' path <- system.file("extdata", "castle.zip", package = "fude")
-#' d <- read_fude(path, quiet = TRUE)
-#' d2 <- extract_fude(d, year = 2022, city = "\u677e\u5c71\u5e02")
-#' d |> extract_fude(year = 2022)
+#' d <- read_fude(path, stringsAsFactors = FALSE, quiet = TRUE)
+#' d2 <- extract_fude(d, year = 2022)
+#'
 #' @export
 extract_fude <- function(data, year = NULL, city = NULL, list = TRUE) {
-  if (length(city) > 1) {
-    stop("`city` must not contain more than one element.")
+  if (is.null(year) & is.null(city)) {
+    stop("Specify either `year` or `city`.")
   }
 
-  if (length(year) > 1) {
-    stop("`year` must not contain more than one element.")
-  }
+  if (!is.null(city)) {
 
-  if (is.null(year)) {
-    year <- max(sub("(_.*)", "", names(ls_fude(data))))
-
-    if (!is.null(city)) {
-      selected_names <- names(data)[grep(city, names(data))]
-      year <- as.double(sub("(_.*)", "", selected_names))
+    if (is.null(year)) {
+      year <- unique(ls_fude(data)$year)
     }
 
-  }
+    selected_names <- NULL
 
-  if (is.null(city)) {
-    selected_names <- names(data)[grep(year, names(data))]
-    city <- sub(".*_", "", selected_names)
-  }
+    for (i in year) {
+      data_i <- ls_fude(data)[ls_fude(data)$year == i, ]
+      matching_idx1 <- match(city, data_i$local_government_cd)
+      matching_idx2 <- match(sub("(\u5e02|\u533a|\u753a|\u6751)$", "", city),
+                             sub("(\u5e02|\u533a|\u753a|\u6751)$", "", data_i$city_kanji))
+      matching_idx3 <- match(tolower(gsub("-SHI|-KU|-CHO|-MACHI|-SON|-MURA", "", city, ignore.case = TRUE)),
+                             tolower(gsub("-SHI|-KU|-CHO|-MACHI|-SON|-MURA", "", data_i$romaji, ignore.case = TRUE)))
+      matching_idx4 <- match(city, data_i$names)
+      matching_idx <- unique(c(matching_idx1, matching_idx2, matching_idx3, matching_idx4))
+      selected_names <- c(selected_names, data_i$full_names[stats::na.omit(matching_idx)])
+    }
 
-  col_name <- paste(year, city, sep = "_")
+  } else {
+    selected_names <- grep(paste0(year, collapse = "|"), names(data), value = TRUE)
+  }
 
   if (list == TRUE) {
-    x <- data[col_name]
+    x <- data[selected_names]
   } else {
 
-    if (length(col_name) > 1) {
+    if (length(selected_names) > 1) {
       stop("`list` must be TRUE if there are multiple objects to be extracted.")
     }
 
-    x <- data[[col_name]]
+    x <- data[[selected_names]]
   }
 
   return(x)

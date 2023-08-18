@@ -4,7 +4,14 @@
 \alias{combine_fude}
 \title{Combine the Fude Polygon data with the agricultural community boundary data}
 \usage{
-combine_fude(data, boundary, city, community, year = NULL)
+combine_fude(
+  data,
+  boundary,
+  city,
+  old_village = "",
+  community = "",
+  year = NULL
+)
 }
 \arguments{
 \item{data}{List of \code{\link[sf:sf]{sf::sf()}} objects.}
@@ -13,14 +20,19 @@ combine_fude(data, boundary, city, community, year = NULL)
 the MAFF.}
 
 \item{city}{A local government name in Japanese to be extracted. In the case of
-overlapping local government names, the prefecture name must be included
-(e.g., Fuchu-shi). Alternatively, it could be a local government code.}
+overlapping local government names, this must contain the prefecture name
+in Japanese and the prefecture code in romaji (e.g., "Fuchu-shi, 13",
+"fuchu 13",  "34 fuchu-shi",  "34, FUCHU-CHO"). Alternatively, it could be
+a 6-digit local government code.}
+
+\item{old_village}{String by regular expression. One or more old village name in Japanese to
+be extracted.}
 
 \item{community}{String by regular expression. One or more agricultural community name in
 Japanese to be extracted.}
 
-\item{year}{Year in the column name of the \code{data}, if there is more than one
-applicable local government code.}
+\item{year}{Year in the column name of the \code{data}. If there is more than one
+applicable local government code, it is required.}
 }
 \value{
 A list of \code{\link[sf:sf]{sf::sf()}} objects.
@@ -32,8 +44,11 @@ Fude Polygon data to the community units.
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 path <- system.file("extdata", "castle.zip", package = "fude")
-d <- read_fude(path)
+d <- read_fude(path, stringsAsFactors = FALSE)
 b <- get_boundary(d)
 db <- combine_fude(d, b, "\u677e\u5c71\u5e02", "\u57ce\u6771", year = 2022)
 \dontshow{\}) # examplesIf}
+}
+\seealso{
+\code{\link[=read_fude]{read_fude()}}.
 }

@@ -9,10 +9,9 @@ extract_fude(data, year = NULL, city = NULL, list = TRUE)
 \arguments{
 \item{data}{List of \code{\link[sf:sf]{sf::sf()}} objects.}
 
-\item{year}{Year to be extracted. If both \code{year} and \code{city} are not
-specified, all objects for the most recent year are extracted.}
+\item{year}{Years to be extracted.}
 
-\item{city}{Local government name (or code) to be extracted.}
+\item{city}{Local government names or codes to be extracted.}
 
 \item{list}{logical. If \code{FALSE}, the object to be extracted is no longer a list.}
 }
@@ -25,9 +24,9 @@ A list of \code{\link[sf:sf]{sf::sf()}} object(s).
 }
 \examples{
 path <- system.file("extdata", "castle.zip", package = "fude")
-d <- read_fude(path, quiet = TRUE)
-d2 <- extract_fude(d, year = 2022, city = "\u677e\u5c71\u5e02")
-d |> extract_fude(year = 2022)
+d <- read_fude(path, stringsAsFactors = FALSE, quiet = TRUE)
+d2 <- extract_fude(d, year = 2022)
+
 }
 \seealso{
 \code{\link[=read_fude]{read_fude()}}.
