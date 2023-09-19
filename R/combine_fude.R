@@ -77,11 +77,35 @@ combine_fude <- function(data, boundary, city, old_village = "", community = "",
                   grepl(community, .data$RCOM_NAME, perl = TRUE)) %>%
     dplyr::mutate(KCITY_NAME = forcats::fct_inorder(.data$KCITY_NAME),
                   RCOM_NAME = forcats::fct_inorder(.data$RCOM_NAME)) %>%
+    dplyr::mutate(centroid = sf::st_centroid(.data$geometry)) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(x = sf::st_coordinates(.data$centroid)[, 1],
+                  y = sf::st_coordinates(.data$centroid)[, 2]) %>%
+    dplyr::ungroup() %>%
     as.data.frame() %>%
     sf::st_sf()
 
   intersection_fude <- sf::st_intersection(x, y)
   intersection_fude$local_government_cd.1 <- NULL
+
+  fude_original <- x[x$polygon_uuid %in% unique(intersection_fude$polygon_uuid), ]
+  fude_filtered <- intersection_fude %>%
+    dplyr::filter(!duplicated(.data$polygon_uuid))
+  common_cols <- intersect(names(fude_original), names(fude_filtered))
+  common_cols <- setdiff(common_cols, "polygon_uuid")
+  fude_selected <- fude_filtered %>%
+    dplyr::select(-dplyr::one_of(common_cols)) %>%
+    sf::st_set_geometry(NULL)
+  fude_original <- dplyr::left_join(fude_original, fude_selected, by = "polygon_uuid")
+
+  y_union <- y %>%
+    sf::st_union() %>%
+    sf::st_sf() %>%
+    dplyr::mutate(centroid = sf::st_centroid(.data$geometry)) %>%
+    dplyr::mutate(x = sf::st_coordinates(.data$centroid)[, 1],
+                  y = sf::st_coordinates(.data$centroid)[, 2]) %>%
+    as.data.frame() %>%
+    sf::st_sf()
 
   geometries <- valid_boundary %>%
     sf::st_union() %>%
@@ -147,8 +171,10 @@ combine_fude <- function(data, boundary, city, old_village = "", community = "",
   ov_map <- ov_all_map %>%
     dplyr::filter(.data$fill == 1)
 
-  return(list(fude = intersection_fude,
+  return(list(fude = fude_original,
+              fude_split = intersection_fude,
               community = y,
+              community_union = y_union,
               ov = ov_map,
               ov_all = ov_all_map,
               lg = lg_map,
