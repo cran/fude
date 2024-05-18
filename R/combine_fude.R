@@ -34,7 +34,13 @@
 #' @importFrom magrittr %>%
 #'
 #' @export
-combine_fude <- function(data, boundary, city, old_village = "", community = "", year = NULL) {
+combine_fude <- function(data,
+                         boundary,
+                         city,
+                         old_village = "",
+                         community = "",
+                         year = NULL) {
+
   location_info <- find_pref_name(city)
   lg_code <- find_lg_code(location_info$pref, location_info$city)
 
@@ -65,8 +71,6 @@ combine_fude <- function(data, boundary, city, old_village = "", community = "",
     dplyr::rowwise() %>%
     dplyr::mutate(local_government_cd = grep(paste0("^", .data$PREF, .data$CITY, "\\d$"), fude::lg_code_table$lg_code, value = TRUE)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(RCOM_romaji = stringi::stri_trans_general(.data$RCOM_KANA, "any-latin"),
-                  RCOM_romaji = paste0(toupper(substring(.data$RCOM_romaji, 1, 1)), substring(.data$RCOM_romaji, 2))) %>%
     sf::st_make_valid()
 
   y <- valid_boundary %>%
@@ -76,7 +80,9 @@ combine_fude <- function(data, boundary, city, old_village = "", community = "",
                   grepl(old_village, .data$KCITY_NAME, perl = TRUE) &
                   grepl(community, .data$RCOM_NAME, perl = TRUE)) %>%
     dplyr::mutate(KCITY_NAME = forcats::fct_inorder(.data$KCITY_NAME),
-                  RCOM_NAME = forcats::fct_inorder(.data$RCOM_NAME)) %>%
+                  RCOM_NAME = forcats::fct_inorder(.data$RCOM_NAME),
+                  RCOM_KANA = forcats::fct_inorder(.data$RCOM_KANA),
+                  RCOM_ROMAJI = forcats::fct_inorder(.data$RCOM_ROMAJI)) %>%
     dplyr::mutate(centroid = sf::st_centroid(.data$geometry)) %>%
     dplyr::rowwise() %>%
     dplyr::mutate(x = sf::st_coordinates(.data$centroid)[, 1],
@@ -102,7 +108,8 @@ combine_fude <- function(data, boundary, city, old_village = "", community = "",
     sf::st_union() %>%
     sf::st_sf() %>%
     dplyr::mutate(centroid = sf::st_centroid(.data$geometry)) %>%
-    dplyr::mutate(x = sf::st_coordinates(.data$centroid)[, 1],
+    dplyr::mutate(local_government_cd = paste0(unique(y$local_government_cd), collapse = "/"),
+                  x = sf::st_coordinates(.data$centroid)[, 1],
                   y = sf::st_coordinates(.data$centroid)[, 2]) %>%
     as.data.frame() %>%
     sf::st_sf()
@@ -166,10 +173,12 @@ combine_fude <- function(data, boundary, city, old_village = "", community = "",
   ov_all_map <- sf::st_set_crs(ov_df, 4326)
 
   ov_all_map <- ov_all_map %>%
-    dplyr::mutate(fill = factor(dplyr::if_else(.data$KCITY_NAME == y$KCITY_NAME, 1, 0)))
+    dplyr::mutate(fill = factor(dplyr::if_else(.data$CITY_NAME == location_info$city & .data$KCITY_NAME %in% y$KCITY_NAME, 1, 0)))
 
   ov_map <- ov_all_map %>%
     dplyr::filter(.data$fill == 1)
+
+  message(paste(length(unique(fude_original$RCOM_NAME)), "communities have been extracted."))
 
   return(list(fude = fude_original,
               fude_split = intersection_fude,
@@ -183,12 +192,12 @@ combine_fude <- function(data, boundary, city, old_village = "", community = "",
               source = list(jp = paste0("\u8FB2\u6797\u6C34\u7523\u7701\u300C\u7B46\u30DD\u30EA\u30B4\u30F3\u30C7\u30FC\u30BF\uFF08",
                                         paste0(unique(fude_original$issue_year), collapse = ", "),
                                         "\u5E74\u5EA6\u516C\u958B\uFF09\u300D\u304A\u3088\u3073\u300C\u8FB2\u696D\u96C6\u843D\u5883\u754C\u30C7\u30FC\u30BF\uFF08",
-                                        paste0(unique(y$edit_year), collapse = ", "),
+                                        paste0(unique(y$boundary_edit_year), collapse = ", "),
                                         "\u5E74\u5EA6\uFF09\u300D\u3092\u52A0\u5DE5\u3057\u3066\u4F5C\u6210\u3002"),
                            en = paste0("Created by processing the Ministry of Agriculture, Forestry and Fisheries, *Fude Polygon Data (released in FY",
                                         paste0(unique(fude_original$issue_year), collapse = ", "),
                                         ")* and *Agricultural Community Boundary Data (FY",
-                                        paste0(unique(y$edit_year), collapse = ", "),
+                                        paste0(unique(y$boundary_edit_year), collapse = ", "),
                                         ")*.")
                          )
               )
