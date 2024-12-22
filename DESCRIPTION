@@ -1,7 +1,7 @@
 Package: fude
 Type: Package
 Title: Utilities for Fude Polygon
-Version: 0.3.6
+Version: 0.3.7
 Authors@R: 
     person(given = "Takeshi",
            family = "Nishimura",
@@ -17,16 +17,16 @@ URL: https://github.com/takeshinishimura/fude,
 BugReports: https://github.com/takeshinishimura/fude/issues
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 3.3.0)
-Imports: sf, dplyr, tidyr, purrr, rlang, magrittr, forcats, stringi,
-        units, glue
+Depends: R (>= 3.5)
+Imports: dplyr, DT, forcats, glue, leaflet, magrittr, purrr, rlang, sf,
+        shiny, tidyr, units
 Suggests: testthat (>= 3.0.0)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2024-05-18 11:07:55 UTC; takeshinishimura
+Packaged: 2024-12-22 05:10:53 UTC; takeshinishimura
 Author: Takeshi Nishimura [aut, cph, cre]
     (<https://orcid.org/0000-0003-1761-4300>)
 Maintainer: Takeshi Nishimura <takenishi@gmail.com>
 Repository: CRAN
-Date/Publication: 2024-05-18 11:20:03 UTC
+Date/Publication: 2024-12-22 05:20:02 UTC

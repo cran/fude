@@ -38,9 +38,9 @@ rename_fude <- function(data,
   unique_nen <- unique(nen)
   matching_codes <- sub(paste(unique_nen, collapse = "|"), "", old_names)
 
-  new_names <- get_lg_name(matching_codes, suffix, romaji)
+  new_names <- get_lg_name(matching_codes, romaji)
 
-  if (suffix == FALSE) {
+  if (isFALSE(suffix)) {
     new_names <- gsub("-SHI|-KU|-CHO|-MACHI|-SON|-MURA", "", new_names, ignore.case = TRUE)
     new_names <- sub("\u5e02(.*)(\u533a$)", "_\\1", new_names)
     new_names <- sub("(\u5e02|\u533a|\u753a|\u6751)$", "", new_names)
@@ -53,14 +53,14 @@ rename_fude <- function(data,
   x <- data
   names(x) <- new_names
 
-  if (quiet == FALSE) {
+  if (isFALSE(quiet)) {
     message(paste(paste0(old_names, " -> ", new_names), collapse = "\n"))
   }
 
   return(x)
 }
 
-get_lg_name <- function(matching_codes, suffix, romaji) {
+get_lg_name <- function(matching_codes, romaji = NULL) {
   matching_idx <- match(matching_codes, fude::lg_code_table$lg_code)
 
   if (is.null(romaji)) {
